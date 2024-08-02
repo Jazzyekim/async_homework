@@ -1,10 +1,9 @@
 import argparse
-import asyncio
 import os
 import sys
+from asyncio import run, gather, TimeoutError
 
-import aiohttp
-from aiohttp import ClientTimeout
+from aiohttp import ClientTimeout, ClientSession
 
 
 async def fetch(session, url, timeout, idx):
@@ -14,15 +13,15 @@ async def fetch(session, url, timeout, idx):
             with open(f'output_{idx}.html', 'wb') as f:
                 f.write(content)
             print(f"Content from {url} saved to output_{idx}.html")
-    except asyncio.TimeoutError:
+    except TimeoutError:
         print(f"TimeoutError: The request to {url} has timed out.")
 
 
 async def main(urls, timeout_value):
     timeout = ClientTimeout(total=timeout_value)
-    async with aiohttp.ClientSession(timeout=timeout) as session:
+    async with ClientSession(timeout=timeout) as session:
         tasks = [fetch(session, url, timeout, idx) for idx, url in enumerate(urls)]
-        await asyncio.gather(*tasks)
+        await gather(*tasks)
 
 
 if __name__ == "__main__":
@@ -38,4 +37,4 @@ if __name__ == "__main__":
     with open(args.file, 'r') as f:
         urls = [line.strip() for line in f if line.strip()]
 
-    asyncio.run(main(urls, args.timeout))
+    run(main(urls, args.timeout))
