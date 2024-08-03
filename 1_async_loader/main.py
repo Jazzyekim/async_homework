@@ -1,7 +1,7 @@
 import argparse
 import os
 import sys
-from asyncio import run, gather, TimeoutError
+from asyncio import run, gather,create_task, TimeoutError
 
 from aiohttp import ClientTimeout, ClientSession
 
@@ -20,7 +20,7 @@ async def fetch(session, url, timeout, idx):
 async def main(urls, timeout_value):
     timeout = ClientTimeout(total=timeout_value)
     async with ClientSession(timeout=timeout) as session:
-        tasks = [fetch(session, url, timeout, idx) for idx, url in enumerate(urls)]
+        tasks = [create_task(fetch(session, url, timeout=timeout, idx=idx)) for idx, url in enumerate(urls)]
         await gather(*tasks)
 
 
