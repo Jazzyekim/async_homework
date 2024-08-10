@@ -17,8 +17,9 @@ class Philosopher:
             print(f"{self.name} is trying to pick up right fork ({self.right_fork.fork_number})")
             async with self.right_fork.lock:
                 print(f"{self.name} took right fork ({self.right_fork.fork_number})")
-                print(f"{self.name} is eating...")
-                await asyncio.sleep(random.uniform(1, 5))
+                eating_time = random.uniform(1, 5)
+                print(f"{self.name} is eating for {eating_time}...")
+                await asyncio.sleep(eating_time)
 
             print(f"{self.name} put down right fork ({self.right_fork.fork_number})")
 
