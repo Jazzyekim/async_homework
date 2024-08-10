@@ -26,8 +26,9 @@ class Philosopher:
 
     async def dine(self):
         while True:
-            print(f"{self.name} is thinking...")
-            await asyncio.sleep(random.uniform(1, 5))
+            thinking_time = random.uniform(1, 5)
+            print(f"{self.name} is thinking for {thinking_time} seconds...")
+            await asyncio.sleep(thinking_time)
 
             await self.__take_forks()
 
