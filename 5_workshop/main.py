@@ -1,3 +1,4 @@
+# link to download: http://storage.googleapis.com/books/ngrams/books/googlebooks-eng-all-1gram-20120701-a.gz
 FILE_PATH = "./googlebooks-eng-all-1gram-20120701-a"
 WORD = "языку"
 
