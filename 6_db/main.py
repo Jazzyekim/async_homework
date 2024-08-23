@@ -12,7 +12,8 @@ import sys
 
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, AsyncSession, async_sessionmaker
 from models import Base, ProblemType
-from cve_repository import make_cve, make_problem_type, get_all_cve
+from cve_repository import (make_cve, make_problem_type, get_all_cve, get_cve_by_id,
+                            get_cve_records_by_date_published, get_cve_records_by_date_updated)
 
 from config import DB_URI
 
@@ -114,8 +115,11 @@ async def main():
 
     async with session_klass() as session:
         logger.info("Fetching CVE")
-        for cve in await get_all_cve(session):
-            print(cve)
+        # for cve in await get_all_cve(session):
+        #     print(cve)
+        print(await get_cve_by_id(session, "CVE-2004-0008"))
+        print(await get_cve_records_by_date_published(session, datetime.fromisoformat("2004-09-01T04:00:00")))
+        print(await get_cve_records_by_date_updated(session, datetime.fromisoformat("2024-08-08T00:01:23.639")))
 
     await drop_tables(engine)
 

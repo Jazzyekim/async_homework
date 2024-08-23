@@ -22,7 +22,9 @@ class CVERecord(Base):
     problem_types = relationship("ProblemType", back_populates="cve_record")
 
     def __repr__(self) -> str:
-        return f"<CVE(id={self.id}, title={self.title}, description={self.description})>"
+        return (f"<CVE(id={self.id}, title={self.title}, description={self.description},"
+                f" date_published={self.date_published}, date_updated={self.date_updated},"
+                f" problem_types={self.problem_types})>")
 
 class ProblemType(Base):
     __tablename__ = "problem_types"
