@@ -37,5 +37,8 @@ class ProblemType(Base):
     cve_record_id = Column(String, ForeignKey("cve_records.id"))
     cve_record = relationship("CVERecord", back_populates="problem_types")
 
+    def __repr__(self) -> str:
+        return (f"<Problem type(description={self.description}")
+
 
 
