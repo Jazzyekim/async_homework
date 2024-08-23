@@ -1,0 +1,12 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: app
+    ports:
+      - "5432:5432"
+    # this would permamanetly store the data in the host machine
+    # volumes:
+    #   - ./data:/var/lib/postgresql/data
