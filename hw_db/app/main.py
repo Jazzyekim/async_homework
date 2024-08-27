@@ -53,7 +53,7 @@ async def drop_tables(engine: AsyncEngine):
         await conn.run_sync(Base.metadata.drop_all)
 
 
-async def process_json_file(session_klass, file_path):
+async def process_json_file(session_klass, file_path, cve_batch, problem_type_batch, batch_size):
     async with session_klass() as session:
         async with aiofiles.open(file_path, 'r', encoding='utf-8') as f:
             content = await f.read()
@@ -67,32 +67,48 @@ async def process_json_file(session_klass, file_path):
                 description = data['containers']['cna']['descriptions'][0]['value']
 
                 published_ = data['cveMetadata']['datePublished'] if 'datePublished' in data['cveMetadata'] else \
-                data['cveMetadata']['dateUpdated']
+                    data['cveMetadata']['dateUpdated']
 
                 date_published = datetime.fromisoformat(published_).replace(tzinfo=None)
                 date_updated = datetime.fromisoformat(data['cveMetadata']['dateUpdated']).replace(tzinfo=None)
                 cve = make_cve(cve_id, title, description, date_published, date_updated)
 
-                session.add(cve)
+                cve_batch.append(cve)
                 if 'problemTypes' in data['containers']['cna']:
                     for problem_type in data['containers']['cna']['problemTypes']:
                         for description in problem_type['descriptions']:
                             problem_type_entry = make_problem_type(description["description"], cve)
-                            session.add(problem_type_entry)
-                await session.commit()
+                            problem_type_batch.append(problem_type_entry)
 
 
 
-async def scan_directory(session_klass, base_path):
+async def scan_directory(session_klass, base_path, batch_size=100):
+    cve_batch = []
+    problem_type_batch = []
+
     for dirpath, dirnames, filenames in os.walk(base_path):
         tasks = []
         for filename in filenames:
             if filename.endswith('.json') and filename.startswith("CVE"):
                 file_path = os.path.join(dirpath, filename)
-                tasks.append(process_json_file(session_klass, file_path))
+                tasks.append(process_json_file(session_klass, file_path, cve_batch, problem_type_batch, batch_size))
 
         if tasks:
             await asyncio.gather(*tasks)
+
+        if len(cve_batch) >= batch_size:
+            async with session_klass() as session:
+                session.add_all(cve_batch)
+                session.add_all(problem_type_batch)
+                await session.commit()
+            cve_batch.clear()
+            problem_type_batch.clear()
+
+    if cve_batch or problem_type_batch:
+        async with session_klass() as session:
+            session.add_all(cve_batch)
+            session.add_all(problem_type_batch)
+            await session.commit()
 
 
 async def main():
