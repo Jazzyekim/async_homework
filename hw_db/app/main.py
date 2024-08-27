@@ -53,7 +53,7 @@ async def drop_tables(engine: AsyncEngine):
         await conn.run_sync(Base.metadata.drop_all)
 
 
-async def process_json_file(session_klass, file_path, cve_batch, problem_type_batch, batch_size):
+async def process_json_file(session_klass, file_path, cve_batch, problem_type_batch):
     async with session_klass() as session:
         async with aiofiles.open(file_path, 'r', encoding='utf-8') as f:
             content = await f.read()
@@ -91,7 +91,7 @@ async def scan_directory(session_klass, base_path, batch_size=100):
         for filename in filenames:
             if filename.endswith('.json') and filename.startswith("CVE"):
                 file_path = os.path.join(dirpath, filename)
-                tasks.append(process_json_file(session_klass, file_path, cve_batch, problem_type_batch, batch_size))
+                tasks.append(process_json_file(session_klass, file_path, cve_batch, problem_type_batch))
 
         if tasks:
             await asyncio.gather(*tasks)
