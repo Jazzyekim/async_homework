@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from typing import Annotated
 
 from cve_vault import deps
@@ -12,6 +13,11 @@ from fastapi_lesson.cve_vault.schemas import CVERecord
 class CVERepository:
     def __init__(self, db: Annotated[AsyncSession, Depends(deps.get_db_session)]):
         self.db = db
+
+    async def get_all_cve(self) -> Sequence[CVERecordDB]:
+        stmt = (select(CVERecordDB).order_by(CVERecordDB.id))
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
 
     async def get_cve_by_id(self, cve_id: str) -> CVERecordDB:
         stmt = (select(CVERecordDB).where(CVERecordDB.id == cve_id))

@@ -1,4 +1,4 @@
-from typing import Annotated, Callable
+from typing import Annotated, Callable, Sequence
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -10,6 +10,11 @@ from fastapi_lesson.cve_vault.schemas import CVERecord
 
 cve_api = APIRouter(prefix="/cve_records")
 
+@cve_api.get("/",
+             name="Get all CVERecord",
+             description="Returns all registered CVERecords")
+async def get_all_cve(repo: Annotated[CVERepository, Depends(get_cve_repository)]) -> Sequence[CVERecord]:
+    return await repo.get_all_cve()
 
 @cve_api.get("/{cve_id}",
              name="Get CVERecord by ID",
