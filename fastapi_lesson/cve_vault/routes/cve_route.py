@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from cve_vault.db.models import CVERecordDB
@@ -24,12 +24,15 @@ async def get_cve_by_id(cve_id: str, db: Annotated[AsyncSession, Depends(deps.ge
 
 @cve_api.post("/",
               name="Add new CVERecord",
-              description="Returns the list of all registered CVERecords")
-async def add_cve_record(record: CVERecord, db: Annotated[AsyncSession, Depends(deps.get_db_session)]) -> CVERecord:
+              description="Returns the list of all registered CVERecords",
+              status_code=201)
+async def add_cve_record(record: CVERecord,
+                         db: Annotated[AsyncSession, Depends(deps.get_db_session)],
+                         response: Response) -> CVERecord:
     cve_record_db = CVERecordDB(**record.model_dump())
     db.add(cve_record_db)
     await db.commit()
 
     await db.refresh(cve_record_db)
+    response.status_code = 201
     return CVERecord.model_validate(cve_record_db)
-
